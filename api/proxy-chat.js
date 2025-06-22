@@ -14,7 +14,7 @@ router.post('/', async (req, res) => {
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://kishorekrazzy.github.io/YourRepoName/',  // 👈 Replace with actual URL
+        'HTTP-Referer': 'https://kishorekrazzy.github.io/ckgpt/',  // 👈 Replace with actual URL
         'X-Title': 'Creative AI Suite'
       },
       body: JSON.stringify(payload)
