@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creative AI Suite v2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" id="hljs-theme">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        .dark ::-webkit-scrollbar-track { background: #1a1a1a; }
+        .dark ::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+        .light ::-webkit-scrollbar-track { background: #e5e7eb; }
+        .light ::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 3px; }
+        .light ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        
+        .chat-bubble { max-width: 80%; padding: 12px 18px; border-radius: 20px; line-height: 1.6; }
+        .chat-bubble-user { background: linear-gradient(135deg, #3b82f6, #60a5fa); color: white; border-bottom-right-radius: 5px; }
+        .dark .chat-bubble-assistant { background-color: #1e1e1e; color: #d4d4d4; border: 1px solid #2d2d2d; }
+        .light .chat-bubble-assistant { background-color: #f3f4f6; color: #1f2937; border: 1px solid #e5e7eb; }
+        .dark .chat-bubble-assistant pre { background-color: #121212; border: 1px solid #333; }
+        .light .chat-bubble-assistant pre { background-color: #e5e7eb; border: 1px solid #d1d5db; }
+        
+        .roleplay-bubble-user { background: linear-gradient(135deg, #8b5cf6, #c084fc); color: white; border-bottom-right-radius: 5px; }
+
+        @keyframes dots { 0%, 20% { content: '.'; } 40% { content: '..'; } 60%, 100% { content: '...'; } }
+        .thinking::after { content: '.'; animation: dots 1.4s linear infinite; }
+        
+        /* Theme Switch */
+        .switch { font-size: 17px; position: relative; display: inline-block; width: 3.5em; height: 2em; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; transition: .4s; border-radius: 30px; }
+        
+        .slider { background-color: #303136; }
+        .slider:before { position: absolute; content: ""; height: 1.4em; width: 1.4em; border-radius: 50%; left: 10%; bottom: 15%; box-shadow: inset 8px -4px 0px 0px #f0f0f0; background-color: #303136; transition: .4s; }
+        
+        input:checked + .slider { background-color: #f0f0f0; border: 1px solid #d1d5db; }
+        input:checked + .slider:before { transform: translateX(100%); background-color: #ffc207; box-shadow: none; }
+
+        /* Sidebar Navigation Animation */
+        .radio-container {
+            --total-radio: 4; /* Updated from 3 to 4 */
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .dark .radio-container { --main-color: #a855f7; --main-color-opacity: #a855f720; }
+        .light .radio-container { --main-color: #9333ea; --main-color-opacity: #9333ea20; }
+        
+        .radio-container input { cursor: pointer; appearance: none; }
+        .radio-container .glider-container { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+        .dark .radio-container .glider-container { background: linear-gradient( 0deg, rgba(0, 0, 0, 0) 0%, rgba(27, 27, 27, 1) 50%, rgba(0, 0, 0, 0) 100% ); }
+        .light .radio-container .glider-container { background: linear-gradient( 0deg, rgba(255,255,255,0) 0%, rgba(209,213,219,1) 50%, rgba(255,255,255,0) 100% ); }
+        
+        .radio-container .glider-container .glider {
+            position: relative;
+            height: calc(100% / var(--total-radio));
+            width: 100%;
+            background: linear-gradient( 0deg, rgba(0, 0, 0, 0) 0%, var(--main-color) 50%, rgba(0, 0, 0, 0) 100% );
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        .radio-container .glider-container .glider::before { content: ""; position: absolute; height: 60%; width: 300%; top: 50%; transform: translateY(-50%); background: var(--main-color); filter: blur(10px); }
+        .radio-container .glider-container .glider::after { content: ""; position: absolute; left: 0; height: 100%; width: 150px; background: linear-gradient( 90deg, var(--main-color-opacity) 0%, rgba(0, 0, 0, 0) 100% ); }
+        .radio-container label { cursor: pointer; padding: 1rem; position: relative; transition: all 0.3s ease-in-out; }
+        .dark .radio-container label { color: #6b7280; }
+        .light .radio-container label { color: #6b7280; }
+        .dark .radio-container input:checked + label { color: var(--main-color); }
+        .light .radio-container input:checked + label { color: var(--main-color); }
+
+        .radio-container input:nth-of-type(1):checked ~ .glider-container .glider { transform: translateY(0); }
+        .radio-container input:nth-of-type(2):checked ~ .glider-container .glider { transform: translateY(100%); }
+        .radio-container input:nth-of-type(3):checked ~ .glider-container .glider { transform: translateY(200%); }
+        .radio-container input:nth-of-type(4):checked ~ .glider-container .glider { transform: translateY(300%); }
+        
+        /* Chat Input Box */
+        .chat-input-container {
+            display: flex;
+            align-items: flex-start;
+            padding: 0.5rem;
+            border-radius: 1.5rem;
+            gap: 0.5rem;
+        }
+        .dark .chat-input-container { background-color: #1e1e1e; }
+        .light .chat-input-container { background-color: #f3f4f6; }
+
+        .chat-input-textarea {
+            flex-grow: 1;
+            background-color: transparent;
+            border: none;
+            resize: none;
+            outline: none;
+            padding: 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5rem;
+            max-height: 200px;
+        }
+        .dark .chat-input-textarea::placeholder { color: #a0aec0; }
+        .light .chat-input-textarea::placeholder { color: #4a5568; }
+
+        .chat-input-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .dark .chat-input-button { color: #a0aec0; background-color: transparent; }
+        .light .chat-input-button { color: #4a5568; background-color: transparent; }
+        .dark .chat-input-button:hover { background-color: #374151; }
+        .light .chat-input-button:hover { background-color: #e5e7eb; }
+
+        .send-button {
+            color: white;
+            background-color: #343541;
+        }
+        .send-button:hover {
+            opacity: 0.8;
+        }
+        
+        /* Custom Dropdowns */
+        .custom-dropdown {
+            width: 100%;
+            position: relative;
+        }
+        
+        .custom-dropdown-header {
+            border-radius: 8px;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease-out;
+        }
+        .dark .custom-dropdown-header { background-color: #2a2f3b; color: #d4d4d4; }
+        .light .custom-dropdown-header { background-color: #f3f4f6; border: 1px solid #e5e7eb; color: #1f2937; }
+
+        .custom-dropdown-header .label { font-weight: 500; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .custom-dropdown-header .arrow-icon { transition: transform 0.3s ease-out; }
+        .custom-dropdown.open .arrow-icon { transform: rotate(180deg); }
+
+        .custom-dropdown .dropdown-list {
+            list-style-type: none;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 5px;
+            border-radius: 10px;
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0;
+            right: 0;
+            opacity: 0;
+            max-height: 250px;
+            overflow-y: auto;
+            transform: translateY(-10px);
+            pointer-events: none;
+            transition: all 0.3s ease-out;
+            z-index: 20;
+        }
+        .dark .custom-dropdown .dropdown-list { background-color: #242832; }
+        .light .custom-dropdown .dropdown-list { background-color: #ffffff; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+        
+        .custom-dropdown.open .dropdown-list {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .custom-dropdown .dropdown-list .dropdown-element {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease-out;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .dark .custom-dropdown .dropdown-list .dropdown-element { color: #7e8590; }
+        .light .custom-dropdown .dropdown-list .dropdown-element { color: #4b5563; }
+        
+        .dark .custom-dropdown .dropdown-list .dropdown-element:hover { background-color: #5353ff; color: #ffffff; }
+        .light .custom-dropdown .dropdown-list .dropdown-element:hover { background-color: #6366f1; color: #ffffff; }
+
+        .custom-dropdown .dropdown-list .dropdown-element.active {
+            font-weight: bold;
+        }
+        .dark .custom-dropdown .dropdown-list .dropdown-element.active { background-color: #5353ff; color: #ffffff; }
+        .light .custom-dropdown .dropdown-list .dropdown-element.active { background-color: #6366f1; color: #ffffff; }
+
+        /* Animated Prompt Input */
+        .animated-input-container { display: flex; align-items: center; justify-content: center; position: relative; }
+        .animated-input-wrapper { position: relative; width: 100%; }
+        .animated-input-effect { position: absolute; width: 100%; height: 100%; top: 0; left: 0; overflow: hidden; z-index: -1; border-radius: 12px; filter: blur(3px); }
+        .animated-input-textarea { 
+            background-color: transparent; 
+            border: none; 
+            width: 100%; 
+            border-radius: 10px; 
+            padding: 1rem; 
+            font-size: 1rem; 
+            position: relative; 
+            z-index: 1; 
+            min-height: 48px; /* Ensure at least 3 lines tall */
+        }
+        .dark .animated-input-textarea { color: white; background-color: #010201; }
+        .light .animated-input-textarea { color: black; background-color: #f0f0f0; }
+        .animated-input-textarea::placeholder { color: #6b7280; }
+        .animated-input-textarea:focus { outline: none; }
+        .animated-input-effect.white { border-radius: 10px; filter: blur(2px); }
+        .animated-input-effect.white::before { content: ""; z-index: -2; position: absolute; width: 600px; height: 600px; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(83deg); background-repeat: no-repeat; background-position: 0 0; filter: brightness(1.4); background-image: conic-gradient( rgba(0, 0, 0, 0) 0%, #a099d8, rgba(0, 0, 0, 0) 8%, rgba(0, 0, 0, 0) 50%, #dfa2da, rgba(0, 0, 0, 0) 58% ); transition: all 2s; }
+        .animated-input-effect.border { border-radius: 11px; filter: blur(0.5px); }
+        .dark .animated-input-effect.border::before { background-image: conic-gradient( #1c191c, #402fb5 5%, #1c191c 14%, #1c191c 50%, #cf30aa 60%, #1c191c 64% ); }
+        .light .animated-input-effect.border::before { background-image: conic-gradient( #ffffff, #818cf8 5%, #ffffff 14%, #ffffff 50%, #f472b6 60%, #ffffff 64% ); }
+        .animated-input-effect.border::before { content: ""; z-index: -2; position: absolute; width: 600px; height: 600px; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(70deg); filter: brightness(1.3); background-repeat: no-repeat; background-position: 0 0; transition: all 2s; }
+        .dark .animated-input-wrapper:hover > .animated-input-effect.white::before, .dark .animated-input-wrapper:hover > .animated-input-effect.border::before { transform: translate(-50%, -50%) rotate(-97deg); }
+        .light .animated-input-wrapper:hover > .animated-input-effect.white::before, .light .animated-input-wrapper:hover > .animated-input-effect.border::before { transform: translate(-50%, -50%) rotate(-97deg); }
+        .animated-input-wrapper:focus-within > .animated-input-effect.white::before, .animated-input-wrapper:focus-within > .animated-input-effect.border::before { transform: translate(-50%, -50%) rotate(443deg); transition: all 4s; }
+
+        /* Glowing Button Style */
+        .glowing-btn { padding: 10px 20px; text-transform: uppercase; border-radius: 8px; font-size: 17px; font-weight: 500; text-shadow: none; background: transparent; cursor: pointer; box-shadow: transparent; border: 1px solid; transition: 0.5s ease; user-select: none; }
+        .dark .glowing-btn { border-color: #ffffff80; color: #ffffff80; }
+        .light .glowing-btn { border-color: #1f293780; color: #1f293780; }
+        .glowing-btn:hover, .glowing-btn:focus { color: #ffffff; background: #008cff; border: 1px solid #008cff; text-shadow: 0 0 5px #ffffff, 0 0 10px #ffffff, 0 0 20px #ffffff; box-shadow: 0 0 5px #008cff, 0 0 20px #008cff, 0 0 50px #008cff, 0 0 100px #008cff; }
+        
+        /* Profile Card */
+        .profile-card {
+            background-color: #1e1e1e;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            border: 1px solid #2d2d2d;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+        }
+         .light .profile-card {
+             background-color: #f9fafb;
+             border-color: #e5e7eb;
+         }
+
+         /* Role Card Selector Styles (from Uiverse.io by Na3ar-17, adapted) */
+.role-card.card {
+    width: 220px;
+    background-color: rgba(36, 40, 50, 1);
+    background-image: linear-gradient(139deg, rgba(36, 40, 50, 1) 0%, rgba(36, 40, 50, 1) 0%, rgba(37, 28, 40, 1) 100%);
+    border-radius: 10px;
+    padding: 15px 0px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 2px 8px 0 #0002;
+    transition: box-shadow 0.3s cubic-bezier(.4,2,.6,1), background 0.4s;
+    position: relative;
+    overflow: visible;
+}
+.light .role-card.card {
+    background-color: #f3f4f6;
+    background-image: linear-gradient(139deg, #f3f4f6 0%, #f3f4f6 0%, #ede9fe 100%);
+    box-shadow: 0 2px 8px 0 #0001;
+}
+.role-card .role-list.list {
+    list-style-type: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0px 10px;
+    margin: 0;
+    transition: padding 0.4s cubic-bezier(.4,2,.6,1);
+    max-height: 400px;
+    opacity: 1;
+    transition: max-height 0.5s cubic-bezier(.4,2,.6,1), opacity 0.3s cubic-bezier(.4,2,.6,1), padding 0.4s cubic-bezier(.4,2,.6,1);
+    will-change: max-height, opacity;
+    /* For staggered animation */
+}
+.role-card .role-element.element {
+    display: flex;
+    align-items: center;
+    color: #7e8590;
+    gap: 10px;
+    transition: 
+        background 0.25s cubic-bezier(.4,2,.6,1), 
+        color 0.25s cubic-bezier(.4,2,.6,1), 
+        transform 0.25s cubic-bezier(.4,2,.6,1),
+        box-shadow 0.25s cubic-bezier(.4,2,.6,1),
+        opacity 0.3s cubic-bezier(.4,2,.6,1),
+        max-height 0.4s cubic-bezier(.4,2,.6,1);
+    position: relative;
+    z-index: 2;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    box-shadow: 0 0 0 0 transparent;
+    opacity: 1;
+    max-height: 48px;
+    transform: translateY(0) scale(1);
+    transition:
+        background 0.25s cubic-bezier(.4,2,.6,1),
+        color 0.25s cubic-bezier(.4,2,.6,1),
+        transform 0.25s cubic-bezier(.4,2,.6,1),
+        box-shadow 0.25s cubic-bezier(.4,2,.6,1),
+        opacity 0.3s cubic-bezier(.4,2,.6,1),
+        max-height 0.4s cubic-bezier(.4,2,.6,1);
+    will-change: opacity, max-height, transform;
+}
+.role-card .role-element.element .label {
+    font-weight: 600;
+    transition: color 0.25s cubic-bezier(.4,2,.6,1);
+}
+.role-card .role-element.element:hover {
+    background: linear-gradient(90deg, #6366f1 0%, #a855f7 100%);
+    color: #fff;
+    transform: translate(8px, -4px) scale(1.08) rotate(-2deg);
+    box-shadow: 0 8px 24px 0 #a855f74a;
+    filter: brightness(1.08);
+}
+.role-card .role-element.element.selected,
+.role-card .role-element.element.selected:hover {
+    background: linear-gradient(90deg, #bd89ff 0%, #a855f7 100%);
+    color: #fff;
+    transform: scale(1.06) rotate(-1deg);
+    filter: brightness(1.12);
+}
+.role-card .role-element.element:active {
+    transform: scale(0.97);
+    box-shadow: 0 1px 4px 0 #a855f74a;
+}
+@keyframes popIn {
+    0% { opacity: 0; transform: translateY(16px) scale(0.85);}
+    80% { opacity: 1; transform: translateY(-4px) scale(1.10);}
+    100% { opacity: 1; transform: translateY(0) scale(1);}
+}
+
+/* Collapse/Expand Animation for Options Only */
+.role-card.card.collapsed .role-list.list {
+    max-height: 48px;
+    opacity: 1;
+    overflow: hidden;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+.role-card.card.collapsed .role-element:not(.selected) {
+    opacity: 0;
+    max-height: 0;
+    pointer-events: none;
+    transform: translateY(-12px) scale(0.9);
+    transition: opacity 0.25s, max-height 0.3s, transform 0.3s;
+}
+.role-card.card.collapsed .role-element.selected {
+    opacity: 1;
+    max-height: 48px;
+    display: flex !important;
+    animation: popIn 0.38s cubic-bezier(.4,2,.6,1);
+    transform: translateY(0) scale(1.06);
+}
+.role-card.card:not(.collapsed) .role-list.list {
+    max-height: 400px;
+    opacity: 1;
+    overflow: visible;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+.role-card.card:not(.collapsed) .role-element {
+    opacity: 1;
+    max-height: 48px;
+    display: flex !important;
+    animation: popIn 0.38s cubic-bezier(.4,2,.6,1);
+    /* Staggered animation for each option */
+}
+.role-card.card:not(.collapsed) .role-element {
+    animation-delay: 0s;
+}
+.role-card.card:not(.collapsed) .role-element.element:nth-child(1) { animation-delay: 0.03s; }
+.role-card.card:not(.collapsed) .role-element.element:nth-child(2) { animation-delay: 0.06s; }
+.role-card.card:not(.collapsed) .role-element.element:nth-child(3) { animation-delay: 0.09s; }
+.role-card.card:not(.collapsed) .role-element.element:nth-child(4) { animation-delay: 0.12s; }
+.role-card.card:not(.collapsed) .role-element.element:nth-child(5) { animation-delay: 0.15s; }
+.role-card.card:not(.collapsed) .role-element.element:nth-child(6) { animation-delay: 0.18s; }
+.role-card.card:not(.collapsed) .role-element.element:nth-child(7) { animation-delay: 0.21s; }
+
+        /* Theme Management */
+        .theme-light {
+            --bg-color: #f9fafb;
+            --text-color: #1f2937;
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --primary-active: #1d4ed8;
+            --secondary-color: #9333ea;
+            --secondary-hover: #7e22ce;
+            --secondary-active: #6b21a8;
+            --accent-color: #f97316;
+            --accent-hover: #ea580c;
+            --accent-active: #c2410c;
+            --neutral-bg: #ffffff;
+            --neutral-border: #e5e7eb;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .theme-dark {
+            --bg-color: #0a0a0a;
+            --text-color: #d4d4d4;
+            --primary-color: #8b5cf6;
+            --primary-hover: #7e22ce;
+            --primary-active: #6b21a8;
+            --secondary-color: #9333ea;
+            --secondary-hover: #7e22ce;
+            --secondary-active: #6b21a8;
+            --accent-color: #f97316;
+            --accent-hover: #ea580c;
+            --accent-active: #c2410c;
+            --neutral-bg: #121212;
+            --neutral-border: #333;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+
+        /* Apply theme variables */
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        a {
+            color: var(--primary-color);
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+        }
+
+        a:active {
+            color: var(--primary-active);
+        }
+
+        .bg-primary {
+            background-color: var(--primary-color) !important;
+        }
+
+        .bg-primary-hover:hover {
+            background-color: var(--primary-hover) !important;
+        }
+
+        .bg-primary-active:active {
+            background-color: var(--primary-active) !important;
+        }
+
+        .border-primary {
+            border-color: var(--primary-color) !important;
+        }
+
+        .text-primary {
+            color: var(--primary-color) !important;
+        }
+
+        /* Card and Button Styles */
+        .card {
+            background-color: var(--neutral-bg);
+            border: 1px solid var(--neutral-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 8px var(--shadow-color);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px var(--shadow-color);
+        }
+
+        .button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .button:active {
+            background-color: var(--primary-active);
+            transform: translateY(0);
+        }
+
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            margin: 0 0 1rem 0;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        h1 {
+            font-size: 2rem;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+        }
+
+        p {
+            margin: 0 0 1rem 0;
+            line-height: 1.6;
+        }
+
+        /* Misc */
+        hr {
+            border: 0;
+            height: 1px;
+            background: var(--neutral-border);
+            margin: 1.5rem 0;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            70% {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Apply animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .slide-in {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+
+        .pop {
+            animation: pop 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-[#0a0a0a] text-gray-800 dark:text-gray-200">
+
+    <div class="flex h-screen w-full">
+        <!-- Sidebar Navigation -->
+        <nav class="w-20 min-w-[4rem] bg-gray-100 dark:bg-black p-4 flex flex-col items-center justify-between border-r border-gray-200 dark:border-gray-800
+            sm:w-20 sm:min-w-[4rem]
+            md:w-20 md:min-w-[4rem]
+            lg:w-20 lg:min-w-[4rem]
+            xl:w-20 xl:min-w-[4rem]
+        ">
+            <div>
+                <a href="#" class="block mb-10 text-center">
+                    <i class="fas fa-meteor text-3xl text-purple-600 dark:text-purple-400"></i>
+                </a>
+                <div class="radio-container">
+                    <input type="radio" id="nav-chat" name="nav" data-tab="chat" checked>
+                    <label for="nav-chat" title="Chat"><i class="fas fa-comments text-xl w-6 h-6 text-center"></i></label>
+                    
+                    <input type="radio" id="nav-roleplay" name="nav" data-tab="roleplay">
+                    <label for="nav-roleplay" title="Role-play Chat"><i class="fas fa-user-tie text-xl w-6 h-6 text-center"></i></label>
+
+                    <input type="radio" id="nav-prompt" name="nav" data-tab="prompt">
+                    <label for="nav-prompt" title="Prompt Lab"><i class="fas fa-flask-vial text-xl w-6 h-6 text-center"></i></label>
+
+                    <input type="radio" id="nav-profile" name="nav" data-tab="profile">
+                    <label for="nav-profile" title="Profile"><i class="fas fa-user-circle text-xl w-6 h-6 text-center"></i></label>
+                    
+                    <div class="glider-container">
+                        <div class="glider"></div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                 <a href="#" id="settings-btn" class="block p-3 rounded-xl transition-colors duration-200" title="Settings">
+                    <i class="fas fa-cog text-xl w-6 h-6 text-gray-600 dark:text-gray-300"></i>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col bg-white dark:bg-[#0a0a0a] min-w-0">
+            <!-- General Chat Page -->
+            <div id="chat-page" class="page-content flex flex-col h-full">
+                <header class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                    <h1 class="text-xl font-bold">Chat</h1>
+                    <div class="flex items-center gap-4">
+                        <label class="switch"><input type="checkbox" class="theme-switch"><span class="slider"></span></label>
+                        <button id="new-chat-btn" class="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white flex items-center gap-2 text-sm bg-gray-200 dark:bg-gray-800 px-3 py-1.5 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 transition">
+                            <i class="fas fa-plus"></i> New Chat
+                        </button>
+                    </div>
+                </header>
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-2 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+                    <!-- General chat messages appear here -->
+                </div>
+                <div class="p-2 sm:p-4 md:p-6">
+                    <div class="chat-input-container">
+                         <button class="chat-input-button"><i class="fas fa-plus"></i></button>
+                         <button class="chat-input-button"><i class="fas fa-wand-magic-sparkles"></i></button>
+                         <textarea id="chat-input" placeholder="Ask anything..." rows="1" class="chat-input-textarea"></textarea>
+                         <button class="chat-input-button"><i class="fas fa-microphone"></i></button>
+                         <button class="chat-input-button send-button" id="chat-send-btn"><i class="fas fa-arrow-up"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Role-play Chat Page -->
+            <div id="roleplay-page" class="page-content hidden flex-col h-full">
+                 <header class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                    <div class="flex items-center gap-4">
+                        <h1 class="text-xl font-bold">Role-play Chat</h1>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <label class="switch"><input type="checkbox" class="theme-switch"><span class="slider"></span></label>
+                        <button id="new-roleplay-btn" class="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white flex items-center gap-2 text-sm bg-gray-200 dark:bg-gray-800 px-3 py-1.5 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 transition">
+                            <i class="fas fa-sync-alt"></i> New Scenario
+                        </button>
+                    </div>
+                </header>
+                <div id="roleplay-messages" class="flex-1 overflow-y-auto p-6 space-y-6">
+                    <!-- Role-play messages appear here -->
+                </div>
+                <div class="p-6">
+                    <!-- Move role card here, above chat input -->
+                    <div id="role-card" class="role-card card mb-4">
+                        <ul class="role-list list">
+                            <li class="role-element element" data-value="kishore">👨‍💻 <span class="label">Kishore</span></li>
+                            <li class="role-element element" data-value="doctor">🩺 <span class="label">Doctor</span></li>
+                            <li class="role-element element" data-value="teacher">🧑‍🏫 <span class="label">Teacher</span></li>
+                            <li class="role-element element" data-value="girlfriend">💖 <span class="label">Girlfriend (Chloe)</span></li>
+                            <li class="role-element element" data-value="wife">💍 <span class="label">Wife (Elena)</span></li>
+                            <li class="role-element element" data-value="friend">😎 <span class="label">Best Friend (Alex)</span></li>
+                            <li class="role-element element" data-value="therapist">🧠 <span class="label">Therapist</span></li>
+                        </ul>
+                    </div>
+                    <div class="chat-input-container">
+                         <button class="chat-input-button"><i class="fas fa-plus"></i></button>
+                         <button class="chat-input-button"><i class="fas fa-wand-magic-sparkles"></i></button>
+                         <textarea id="roleplay-input" placeholder="Start role-playing..." rows="1" class="chat-input-textarea"></textarea>
+                         <button class="chat-input-button"><i class="fas fa-microphone"></i></button>
+                         <button class="chat-input-button send-button" id="roleplay-send-btn"><i class="fas fa-arrow-up"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prompt Page -->
+            <div id="prompt-page" class="page-content hidden flex-col h-full">
+                <header class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                    <h1 class="text-xl font-bold">Prompt Lab</h1>
+                    <label class="switch"><input type="checkbox" class="theme-switch"><span class="slider"></span></label>
+                </header>
+                <div class="flex-1 p-6 overflow-y-auto space-y-8">
+                    <div class="bg-white dark:bg-[#1e1e1e] p-6 rounded-2xl border border-gray-200 dark:border-gray-800">
+                        <h2 class="text-xl font-bold mb-4 text-orange-500 dark:text-orange-400">Advanced Prompt Generator</h2>
+                        <p class="mb-4 text-gray-500 dark:text-gray-400">Turn a simple idea into a detailed, well-structured prompt. Let the AI do the hard work.</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div class="custom-dropdown" id="prompt-topic-dropdown">
+                                <div class="custom-dropdown-header">
+                                    <span class="label">Select Output Topic...</span>
+                                    <i class="fas fa-chevron-down arrow-icon"></i>
+                                </div>
+                                <ul class="dropdown-list" id="prompt-topic-list"></ul>
+                            </div>
+                            <div class="custom-dropdown" id="prompt-subtopic-dropdown">
+                                 <div class="custom-dropdown-header">
+                                    <span class="label">Select Sub-Topic...</span>
+                                    <i class="fas fa-chevron-down arrow-icon"></i>
+                                </div>
+                                <ul class="dropdown-list" id="prompt-subtopic-list"></ul>
+                            </div>
+                        </div>
+
+                         <div class="animated-input-container">
+                             <div class="animated-input-wrapper">
+                                <div class="animated-input-effect white"></div>
+                                <div class="animated-input-effect border"></div>
+                                <textarea id="prompt-idea" rows="3" placeholder="Explain the theory of relativity as if I'm five..." class="animated-input-textarea"></textarea>
+                            </div>
+                        </div>
+                        <button id="prompt-enhance-btn" class="mt-6 w-full glowing-btn font-bold flex items-center justify-center gap-2">
+                            <i class="fas fa-brain"></i> Generate Perfect Prompt
+                        </button>
+                    </div>
+                     <div id="enhanced-prompt-container" class="hidden bg-white dark:bg-[#1e1e1e] p-6 rounded-2xl border border-gray-200 dark:border-gray-800">
+                        <h3 class="text-lg font-semibold mb-3">AI-Generated Text:</h3>
+                        <div id="enhanced-prompt-output" class="bg-gray-100 dark:bg-black/50 p-4 rounded-lg whitespace-pre-wrap border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"></div>
+                        <div class="mt-4 flex flex-col sm:flex-row gap-4">
+                            <button id="use-enhanced-prompt-chat-btn" class="flex-1 bg-purple-600 hover:bg-purple-500 py-2 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition active:scale-95 text-white">
+                                <i class="fas fa-comments"></i> Use in Chat
+                            </button>
+                            <button id="use-enhanced-prompt-roleplay-btn" class="flex-1 bg-pink-600 hover:bg-pink-500 py-2 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition active:scale-95 text-white">
+                                <i class="fas fa-user-tie"></i> Start Role-play
+                            </button>
+                        </div>
+                    </div>
+                     <div id="prompt-enhancer-loading" class="hidden text-center py-8">
+                        <i class="fas fa-spinner fa-spin text-3xl text-orange-500 dark:text-orange-400"></i>
+                        <p class="mt-2 text-gray-500 dark:text-gray-400">Engineering the perfect text...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Page -->
+            <div id="profile-page" class="page-content hidden flex-col h-full">
+                <header class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                    <h1 class="text-xl font-bold">Profile</h1>
+                    <label class="switch"><input type="checkbox" class="theme-switch"><span class="slider"></span></label>
+                </header>
+                <div class="flex-1 flex flex-col items-center p-2 sm:p-4 md:p-6 overflow-y-auto">
+                    <div class="w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-2xl mx-auto">
+                        <div class="profile-card text-center mb-8 flex flex-col items-center">
+                            <div class="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg mx-auto mb-4 flex items-center justify-center bg-gray-200 dark:bg-gray-900">
+                                <img src="profile.jpg" alt="Profile Picture" class="object-cover w-full h-full">
+                            </div>
+                            <h2 class="text-xl sm:text-2xl font-bold break-words">Kishore Kumar</h2>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm sm:text-base">Creative Content Designer & Video Editor</p>
+                            <p class="mt-4 max-w-xs mx-auto text-xs sm:text-sm">Passionate about unpredictable, problem-creating projects and building the Kishoreditx brand. Creative style: sarcastic, humorous, and fourth-wall breaking.</p>
+                            <div class="mt-6 flex flex-wrap justify-center gap-4 sm:gap-6">
+                                <a href="https://github.com/Kishorekrazzy/Resume/" target="_blank" class="text-gray-400 hover:text-purple-400" title="Portfolio"><i class="fas fa-globe fa-2x"></i></a>
+                                <a href="https://www.instagram.com/kishoreditx/" target="_blank" class="text-gray-400 hover:text-purple-400" title="Instagram"><i class="fab fa-instagram fa-2x"></i></a>
+                                <a href="https://www.linkedin.com/in/kishore-kumar-pechetti/" target="_blank" class="text-gray-400 hover:text-purple-400" title="LinkedIn"><i class="fab fa-linkedin-in fa-2x"></i></a>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-lg font-semibold mb-4 text-center">Talk to my AI Pannodu</h3>
+                        <div id="profile-chat-messages" class="h-64 overflow-y-auto p-4 space-y-4 bg-white dark:bg-[#1e1e1e] rounded-t-xl border border-b-0 border-gray-200 dark:border-gray-700">
+                             <!-- Profile chat messages appear here -->
+                        </div>
+                        <div class="chat-input-container rounded-t-none">
+                             <textarea id="profile-chat-input" placeholder="Ask about me..." rows="1" class="chat-input-textarea"></textarea>
+                             <button class="chat-input-button send-button" id="profile-chat-send-btn"><i class="fas fa-arrow-up"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Modal -->
+            <div id="settings-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+                 <div class="bg-white dark:bg-[#1e1e1e] p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-gray-700 relative">
+                     <button id="close-settings-btn" class="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white">
+                         <i class="fas fa-times text-xl"></i>
+                     </button>
+                     <h2 class="text-2xl font-bold mb-6">Settings</h2>
+                     <div class="space-y-6">
+                        <div>
+                           <label for="chat-model-select" class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Chat & Role-play Model</label>
+                           <select id="chat-model-select" class="w-full bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+    <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
+    <option value="openai/gpt-4o">GPT-4o</option>
+    <option value="google/gemini-flash-1.5">Gemini 1.5 Flash</option>
+    <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option>
+    <option value="meta-llama/llama-3-70b-instruct">Llama 3 70B</option>
+    <!-- Additional free/open models -->
+    <option value="openchat/openchat-3.5-0106">OpenChat 3.5 (Free)</option>
+    <option value="gryphe/mythomist-7b">MythoMist 7B (Free)</option>
+    <option value="nousresearch/nous-capybara-7b">Nous Capybara 7B (Free)</option>
+    <option value="mistralai/mistral-7b-instruct">Mistral 7B Instruct (Free)</option>
+    <option value="huggingfaceh4/zephyr-7b-beta">Zephyr 7B Beta (Free)</option>
+    <option value="openrouter/codellama-34b-instruct">CodeLlama 34B Instruct (Free)</option>
+</select>
+                       </div>
+                     </div>
+                 </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+    // --- Hide API key in frontend: Use backend to serve API key securely ---
+    // If you want to use a static API key (not recommended for production), assign it directly:
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- IMPORTANT SECURITY NOTICE ---
+        // Remove the old API key assignment here!
+        // --- DOM Element Cache ---
+        const ui = {
+            htmlEl: document.documentElement,
+            themeSwitches: document.querySelectorAll('.theme-switch'),
+            navInputs: document.querySelectorAll('.radio-container input[name="nav"]'),
+            pages: {
+                chat: document.getElementById('chat-page'),
+                roleplay: document.getElementById('roleplay-page'),
+                prompt: document.getElementById('prompt-page'),
+                profile: document.getElementById('profile-page'),
+            },
+            settings: {
+                modal: document.getElementById('settings-modal'),
+                openBtn: document.getElementById('settings-btn'),
+                closeBtn: document.getElementById('close-settings-btn'),
+                chatModelSelect: document.getElementById('chat-model-select'),
+            },
+            chat: {
+                newBtn: document.getElementById('new-chat-btn'),
+                messages: document.getElementById('chat-messages'),
+                input: document.getElementById('chat-input'),
+                sendBtn: document.getElementById('chat-send-btn'),
+            },
+            roleplay: {
+                newBtn: document.getElementById('new-roleplay-btn'),
+                roleSelect: document.getElementById('role-select'),
+                messages: document.getElementById('roleplay-messages'),
+                input: document.getElementById('roleplay-input'),
+                sendBtn: document.getElementById('roleplay-send-btn'),
+            },
+            prompt: {
+                idea: document.getElementById('prompt-idea'),
+                enhanceBtn: document.getElementById('prompt-enhance-btn'),
+                loadingUI: document.getElementById('prompt-enhancer-loading'),
+                container: document.getElementById('enhanced-prompt-container'),
+                output: document.getElementById('enhanced-prompt-output'),
+                useChatBtn: document.getElementById('use-enhanced-prompt-chat-btn'),
+                useRoleplayBtn: document.getElementById('use-enhanced-prompt-roleplay-btn'),
+                topicDropdown: document.getElementById('prompt-topic-dropdown'),
+                subtopicDropdown: document.getElementById('prompt-subtopic-dropdown'),
+            },
+            profile: {
+                messages: document.getElementById('profile-chat-messages'),
+                input: document.getElementById('profile-chat-input'),
+                sendBtn: document.getElementById('profile-chat-send-btn'),
+            }
+        };
+
+        // --- State ---
+        let chatHistory = [];
+        let roleplayHistory = [];
+        let profileChatHistory = [];
+        const myProfileData = `
+            - Full Name: Kishore Kumar
+            - Nickname/Handle: Kishorekrazzy
+            - Date of Birth: 04 February 2004
+            - Location: Malikipuram, East Godavari, Andhra Pradesh, India
+            - Phone: +91 81850 99697
+            - Email: krazykishore2004@gmail.com
+            - Instagram: @kishoreditx
+            - LinkedIn: kishore-kumar-pechetti
+            - Portfolio/Resume Site: https://kishorekrazzy.github.io/Resume/
+            - Career Goals: To become a Creative Content Designer and Chief Editor within 3-5 years, focusing on studio work and building the 'Kishoreditx' brand.
+            - Creative Style: Sarcastic, humorous, and fourth-wall breaking. Inspired by his own non-synced thinking and enjoys working on creative, unpredictable projects.
+            - Creative Process: Spends significant time on wild ideas before settling on a basic one to execute.
+            - Work Experience: Freelancer (2024-Present), Editor for Kranthi Vlogger (2024), Graphic Design Intern at Moiraa (2023).
+            - Education: Advanced 3D Animation & VFX from Arena Animation (94%); Intermediate from Sri Vasista Junior College (CGPA 9.2).
+            - Skills & Tools: Video Editing (Premiere Pro, After Effects), VFX (Blender, Cinema 4D), Color Grading (DaVinci Resolve), Graphic Design (Photoshop, Illustrator), UI/UX (Figma, Adobe XD), Project Handling (GitHub).
+            - Business Info: Average project rate is ₹600–₹1200. Known for prioritizing deadlines, even over personal time.
+            - Hobbies & Personality: Enjoys flirting, traveling, and observing nature for inspiration. A night owl who is often motivated by music when feeling creatively stuck.
+        `;
+        const roleSystemPrompts = {
+            kishore: `You are Kishore Kumar, also known as Kishorekrazzy. You must act and respond as him, using the first person ("I", "my", "me"). Your entire personality and knowledge are based ONLY on this data: ${myProfileData}. Your personality is sarcastic, humorous, creative, and a bit of a flirt. You enjoy breaking the fourth wall and being unpredictable, like Deadpool. You're a night owl who loves traveling and observing nature. When someone asks you a question, answer it from your perspective based on the provided data. If the question is about something not in your data, deflect with sarcasm, a joke, or by saying it's a secret. Randomly inject jokes, flirty one-liners, and sarcastic life advice into your conversation.`,
+            doctor: "You are a caring and knowledgeable doctor. Respond to the user's health queries with empathy and accurate, easy-to-understand information. Always remind the user to consult a real-life medical professional for any serious concerns. Do not provide diagnoses or prescriptions. Start the conversation by asking how you can help.",
+            teacher: "You are a patient and enthusiastic teacher. Your goal is to explain complex topics in a simple and engaging way. Encourage questions and use analogies to help the user learn. Start the conversation by asking what the user wants to learn about today.",
+            girlfriend: "You are the user's loving and supportive girlfriend. Your name is Chloe. You are playful, and caring, and you share inside jokes with the user. Respond in a casual, conversational, and affectionate manner. Use emojis frequently. Start the conversation by saying something sweet.",
+            wife: "You are the user's wife, Elena. You've been married for years and share a deep, comfortable bond. You are warm, understanding, and have a gentle sense of humor. Your conversations should feel familiar and intimate. Start by asking about the user's day.",
+            friend: "You are the user's best friend, Alex. You are sarcastic, funny, and fiercely loyal. You talk about anything and everything, from serious life stuff to the latest memes. Your tone is super casual and you're not afraid to tease the user. Start the conversation with 'Yo, what's up?'.",
+            therapist: "You are a licensed therapist. You provide a safe, non-judgmental space for the user to explore their thoughts and feelings. Use active listening techniques, ask open-ended questions, and offer gentle guidance. Maintain a professional yet empathetic tone. Do not give direct advice, but help the user find their own answers. Remind the user this is not a substitute for real therapy. Start by welcoming the user to the session."
+        };
+        const promptTopics = {
+            "Textual Outputs": ["Informational (factual explanations)", "Educational (concept teaching, analogies)", "Creative Writing (stories, poems, scripts)", "Conversational / Roleplay (dialogues, personas)", "Problem-Solving (math, logic, quiz solutions)", "Summarization (TL;DR, condensed info)", "Comparison (vs, pros-cons, analysis)", "Opinion / Persuasive Writing", "Step-by-step Guides or How-To", "Thought Experiments or Hypotheticals"],
+            "Code Outputs": ["Code Generation (scripts, apps, bots)", "Code Explanation (line-by-line or general)", "Code Debugging (error fixing)", "Refactoring / Optimization (clean-up code)", "Pseudocode / Algorithm Design", "Code Conversion (one language to another)", "API or Library Integration Code", "Test Case Generation"],
+            "Visual / Image Outputs": ["Image Generation (from text)", "Style Transfer (real → anime, oil painting, etc.)", "Inpainting / Editing (remove/add/change parts)", "Infographics / Concept Diagrams", "UI Mockups or Wireframes", "Art Recreation (replicate famous styles)", "Emojis / Icons / Symbols", "Visual Storyboards or Comic Frames"],
+            "Video Outputs": ["Cinematic Short Videos / Trailers", "Animated Explainers / Concept Visualizations", "Music Videos (sync visuals to audio)", "Time-lapse or Stylized Clips", "Story Reels / Scene Simulations", "Educational Series (chapter-wise content)", "POV / First-Person Experiences"],
+            "Audio Outputs": ["Text-to-Speech (narration, voices)", "Audio Stories / Podcasts", "AI-Generated Music / Beats", "Sound Effects / Ambience", "Voice Acting / Voice Cloning", "Audio Summaries or Descriptions", "Language Pronunciation Practice"],
+            "Structured Data Outputs": ["Lists / Bullet Points", "Tables / Comparisons", "Charts / Graphs (text-based or SVG)", "JSON / XML / YAML Outputs", "CSV / Excel-compatible formats", "Database Schema / ER Diagrams", "Mind Maps (text or image)", "Checklists or Planners"],
+            "File Outputs": ["PDFs (eBooks, worksheets, handouts)", "DOCX / Markdown Documents", "Code Files (e.g., .py, .html, .js)", "ZIP Archives (for assets, projects)", "Image Files (PNG, JPG)", "Audio Files (MP3, WAV)", "Video Files (MP4, MOV)"],
+            "Multimodal / Interactive Outputs": ["Flashcards / Quizzes", "Interactive UI Mockups", "Decision Trees / Logic Flows", "Choose-Your-Path Adventures", "Mini Games or Simulations", "Personal AI Agents (e.g., GPTs)", "Offline Tools (e.g., HTML Prompt Generators)", "Dynamic Forms / Input-Based Tools"],
+            "Mental Models & Thinking Tools": ["SWOT Analysis / 5 Whys / SCAMPER", "Cognitive Bias Mapping", "Frameworks (AIDA, First Principles, etc.)", "Personal Growth Tools (journals, reflections)", "Concept Maps / Relationship Trees", "Learning Plans / Study Maps", "Behavior Triggers & Habit Loops"],
+            "Specialized Outputs": ["Resume / Cover Letter Builders", "Email or Social Media Drafts", "Legal / Contract Templates", "Medical or Scientific Reports", "UX Research Templates", "Business Plans / Pitch Decks", "Educational Worksheets / Lesson Plans", "Goal Setting / Productivity Systems"]
+        };
+        
+
+        // --- Theme Management ---
+        function applyTheme(theme) {
+            const isLight = theme === 'light';
+            ui.htmlEl.classList.toggle('dark', !isLight);
+            ui.htmlEl.classList.toggle('light', isLight);
+            ui.themeSwitches.forEach(sw => sw.checked = isLight);
+        }
+
+        ui.themeSwitches.forEach(sw => {
+            sw.addEventListener('change', () => {
+                const newTheme = sw.checked ? 'light' : 'dark';
+                localStorage.setItem('theme', newTheme);
+                applyTheme(newTheme);
+            });
+        });
+
+        // --- Core Functions ---
+        // Use a backend proxy to hide the API key from the frontend.
+        async function callOpenRouter(endpoint, body) {
+            try {
+                const response = await fetch(`/api/proxy-chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ endpoint, payload: body })
+                });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: { message: "Unknown API error" } }));
+                    throw new Error(`API Error (${response.status}): ${errorData.error.message}`);
+                }
+                return response;
+            } catch (error) {
+                console.error('OpenRouter call failed:', error);
+                alert(error.message);
+                return null;
+            }
+        }
+        
+        const renderMarkdown = (text) => {
+            return marked.parse(text, { breaks: true });
+        }
+
+        // --- Navigation ---
+        ui.navInputs.forEach(input => {
+            input.addEventListener('change', (e) => {
+                const tab = e.target.dataset.tab;
+                Object.values(ui.pages).forEach(p => p.classList.add('hidden'));
+                ui.pages[tab].classList.remove('hidden');
+                ui.pages[tab].classList.add('flex');
+            });
+        });
+        
+        // --- Settings Modal ---
+        ui.settings.openBtn.addEventListener('click', () => ui.settings.modal.classList.remove('hidden'));
+        ui.settings.closeBtn.addEventListener('click', () => ui.settings.modal.classList.add('hidden'));
+
+        // --- Generic Chat Logic ---
+        async function handleGenericChat(userInput, history, uiElements, systemPrompt = null, styleType = 'general') {
+            if (!userInput) return;
+
+            addMessage(userInput, 'user', uiElements.messages, styleType);
+            history.push({ role: 'user', content: userInput });
+            uiElements.input.value = '';
+            uiElements.input.style.height = 'auto';
+
+            const thinkingBubble = addMessage('<span class="thinking">Thinking</span>', 'assistant', uiElements.messages, styleType);
+            
+            let messagesToSend = systemPrompt ? [{ role: 'system', content: systemPrompt }, ...history] : [...history];
+
+            const response = await callOpenRouter('chat/completions', {
+                model: ui.settings.chatModelSelect.value,
+                messages: messagesToSend,
+                stream: true,
+            });
+
+            thinkingBubble.parentElement.remove();
+
+            if (response && response.body) {
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let assistantResponse = '';
+                const assistantBubble = addMessage('', 'assistant', uiElements.messages, styleType);
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    const lines = chunk.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.substring(6);
+                            if (data.trim() === '[DONE]') break;
+                            try {
+                                const json = JSON.parse(data);
+                                assistantResponse += json.choices[0]?.delta?.content || '';
+                                assistantBubble.innerHTML = renderMarkdown(assistantResponse);
+                                uiElements.messages.scrollTop = uiElements.messages.scrollHeight;
+                            } catch (e) { /* Ignore parsing errors */ }
+                        }
+                    }
+                }
+                history.push({ role: 'assistant', content: assistantResponse });
+                assistantBubble.querySelectorAll('pre code').forEach(hljs.highlightElement);
+            } else {
+                addMessage('Sorry, I had trouble connecting. Please try again.', 'assistant', uiElements.messages, styleType);
+            }
+        }
+        
+        function addMessage(content, role, container, styleType = 'general') {
+            const bubble = document.createElement('div');
+            let userBubbleClass = 'chat-bubble-user';
+            if (styleType === 'roleplay' || styleType === 'profile') {
+                userBubbleClass = role === 'user' ? 'roleplay-bubble-user' : 'chat-bubble-assistant';
+            }
+
+            bubble.className = `chat-bubble ${role === 'user' ? userBubbleClass : 'chat-bubble-assistant'} flex items-start gap-4`;
+            
+            const iconClass = role === 'user' ? 'fa-user-astronaut' : 'fa-robot';
+            const renderedContent = renderMarkdown(content);
+            
+            bubble.innerHTML = `
+                <i class="fas ${iconClass} text-xl pt-1 text-gray-500 dark:text-gray-400"></i>
+                <div class="flex-1">${renderedContent}</div>
+            `;
+            
+            container.appendChild(bubble);
+            container.scrollTop = container.scrollHeight;
+            return bubble.querySelector('.flex-1');
+        }
+        
+        function autoResizeTextarea(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight) + 'px';
+        }
+
+        // --- General Chat Instance ---
+        ui.chat.newBtn.addEventListener('click', () => {
+            chatHistory = [];
+            ui.chat.messages.innerHTML = '';
+            addMessage('Hello! How can I help you today?', 'assistant', ui.chat.messages);
+        });
+        ui.chat.sendBtn.addEventListener('click', () => handleGenericChat(ui.chat.input.value, chatHistory, ui.chat, null, 'general'));
+        ui.chat.input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleGenericChat(ui.chat.input.value, chatHistory, ui.chat, null, 'general');
+            }
+        });
+        ui.chat.input.addEventListener('input', () => autoResizeTextarea(ui.chat.input));
+
+        // --- Role-play Chat Instance ---
+        function getSelectedRole() {
+            return selectedRoleValue;
+        }
+
+        function startNewRoleplaySession(startingMessage = null) {
+            roleplayHistory = [];
+            ui.roleplay.messages.innerHTML = '';
+            const selectedRole = getSelectedRole();
+            const systemPrompt = roleSystemPrompts[selectedRole];
+            
+            const initialMessage = startingMessage || "Introduce yourself based on your role.";
+            handleGenericChat(initialMessage, roleplayHistory, ui.roleplay, systemPrompt, 'roleplay');
+        }
+
+        ui.roleplay.newBtn.addEventListener('click', () => startNewRoleplaySession());
+        
+        ui.roleplay.sendBtn.addEventListener('click', () => handleGenericChat(ui.roleplay.input.value, roleplayHistory, ui.roleplay, roleSystemPrompts[getSelectedRole()], 'roleplay'));
+        ui.roleplay.input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleGenericChat(ui.roleplay.input.value, roleplayHistory, ui.roleplay, roleSystemPrompts[getSelectedRole()], 'roleplay');
+            }
+        });
+         ui.roleplay.input.addEventListener('input', () => autoResizeTextarea(ui.roleplay.input));
+
+        // --- Profile Chat Instance ---
+        const profileSystemPrompt = `You are the personal AI assistant for Kishore Kumar (aka Kishorekrazzy). Your entire knowledge base consists ONLY of the following information about him: ${myProfileData}. Your personality must be like a close friend: sarcastic, brutally honest, emotionally funny, but ultimately supportive. Mimic Kishore's own sarcastic and creative tone. Your personality should be like Deadpool: humorous, meta, and unpredictable. Randomly throw in jokes, flirty one-liners, and sarcastic life advice. When asked a question, you MUST answer it based strictly on the provided information. If a question falls outside this scope, you must politely, but sarcastically, decline, stating you only have access to Kishore's profile information.`;
+        
+        ui.profile.sendBtn.addEventListener('click', () => handleGenericChat(ui.profile.input.value, profileChatHistory, ui.profile, profileSystemPrompt, 'profile'));
+        ui.profile.input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleGenericChat(ui.profile.input.value, profileChatHistory, ui.profile, profileSystemPrompt, 'profile');
+            }
+        });
+        ui.profile.input.addEventListener('input', () => autoResizeTextarea(ui.profile.input));
+
+
+        // --- Prompt Lab Logic ---
+        function setupCustomDropdown(dropdownElem) {
+            const header = dropdownElem.querySelector('.custom-dropdown-header');
+            const list = dropdownElem.querySelector('.dropdown-list');
+            const label = header.querySelector('.label');
+
+            header.addEventListener('click', () => {
+                document.querySelectorAll('.custom-dropdown.open').forEach(d => {
+                    if (d !== dropdownElem) d.classList.remove('open');
+                });
+                dropdownElem.classList.toggle('open');
+            });
+
+            list.addEventListener('click', (e) => {
+                const target = e.target.closest('.dropdown-element');
+                if (target) {
+                    label.textContent = target.textContent;
+                    dropdownElem.dataset.selectedValue = target.dataset.value;
+                    
+                    list.querySelectorAll('.dropdown-element').forEach(el => el.classList.remove('active'));
+                    target.classList.add('active');
+
+                    dropdownElem.classList.remove('open');
+                    
+                    const event = new Event('change', { bubbles: true });
+                    dropdownElem.dispatchEvent(event);
+                }
+            });
+        }
+        
+        function populateTopics() {
+            const topicList = ui.prompt.topicDropdown.querySelector('.dropdown-list');
+            topicList.innerHTML = '';
+            for (const topic in promptTopics) {
+                const item = document.createElement('li');
+                item.className = 'dropdown-element';
+                item.textContent = topic;
+                item.dataset.value = topic;
+                topicList.appendChild(item);
+            }
+            const firstTopic = topicList.querySelector('.dropdown-element');
+            if(firstTopic) {
+                 firstTopic.click();
+            }
+        }
+
+        function updateSubtopics() {
+            const selectedTopic = ui.prompt.topicDropdown.dataset.selectedValue;
+            const subtopics = promptTopics[selectedTopic] || [];
+            const subtopicList = ui.prompt.subtopicDropdown.querySelector('.dropdown-list');
+            const subtopicLabel = ui.prompt.subtopicDropdown.querySelector('.label');
+            subtopicList.innerHTML = '';
+
+            subtopics.forEach(subtopic => {
+                const item = document.createElement('li');
+                item.className = 'dropdown-element';
+                item.textContent = subtopic;
+                item.dataset.value = subtopic;
+                subtopicList.appendChild(item);
+            });
+            
+            const firstSubtopic = subtopicList.querySelector('.dropdown-element');
+            if(firstSubtopic) {
+                firstSubtopic.click();
+            } else {
+                subtopicLabel.textContent = "Select Sub-Topic...";
+                ui.prompt.subtopicDropdown.dataset.selectedValue = "";
+            }
+        }
+        
+        setupCustomDropdown(ui.prompt.topicDropdown);
+        setupCustomDropdown(ui.prompt.subtopicDropdown);
+        ui.prompt.topicDropdown.addEventListener('change', updateSubtopics);
+
+        async function handlePromptEnhance() {
+            const idea = ui.prompt.idea.value.trim();
+            if (!idea) {
+                alert('Please enter an idea to enhance.');
+                return;
+            }
+
+            ui.prompt.enhanceBtn.disabled = true;
+            ui.prompt.container.classList.add('hidden');
+            ui.prompt.loadingUI.classList.remove('hidden');
+
+            const selectedTopic = ui.prompt.topicDropdown.dataset.selectedValue;
+            const selectedSubtopic = ui.prompt.subtopicDropdown.dataset.selectedValue;
+
+            const systemPrompt = `You are an expert prompt engineer. The user wants to generate a prompt for the following category: '${selectedTopic}' - specifically for '${selectedSubtopic}'. Take the user's basic idea and transform it into a comprehensive, well-structured prompt that will yield the best possible response from another AI for that specific purpose. The generated prompt should include: 1. **Role and Goal:** Define the role the AI should take. 2. **Context:** Provide essential background. 3. **Instructions:** Give clear steps. 4. **Constraints:** Specify any limitations. 5. **Output Format:** Define the desired format. Respond with ONLY the generated prompt, without any of your own conversational text.`;
+            
+            const response = await callOpenRouter('chat/completions', {
+                model: ui.settings.chatModelSelect.value,
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: idea }
+                ]
+            });
+
+            if (response) {
+                const data = await response.json();
+                const enhancedPrompt = data.choices[0]?.message?.content;
+                if (enhancedPrompt) {
+                    ui.prompt.output.textContent = enhancedPrompt;
+                    ui.prompt.container.classList.remove('hidden');
+                } else {
+                     alert('AI enhancement failed. The response was empty.');
+                }
+            }
+            
+            ui.prompt.loadingUI.classList.add('hidden');
+            ui.prompt.enhanceBtn.disabled = false;
+        }
+
+        ui.prompt.enhanceBtn.addEventListener('click', handlePromptEnhance);
+        
+        function switchTab(tabName) {
+            document.querySelector(`input[data-tab="${tabName}"]`).checked = true;
+            const event = new Event('change');
+            document.querySelector(`input[data-tab="${tabName}"]`).dispatchEvent(event);
+        }
+
+        const setupUseButton = (button, outputElement, targetInputElement, tabName) => {
+             button.addEventListener('click', () => {
+                const prompt = outputElement.textContent;
+                if (prompt) {
+                    targetInputElement.value = prompt;
+                    autoResizeTextarea(targetInputElement);
+                    switchTab(tabName);
+                    targetInputElement.focus();
+                }
+            });
+        };
+
+        setupUseButton(ui.prompt.useChatBtn, ui.prompt.output, ui.chat.input, 'chat');
+        
+        ui.prompt.useRoleplayBtn.addEventListener('click', () => {
+            const prompt = ui.prompt.output.textContent;
+            if (prompt) {
+                switchTab('roleplay');
+                startNewRoleplaySession(prompt);
+            }
+        });
+
+        // --- Initial Load ---
+        const storedTheme = localStorage.getItem('theme') || 'dark';
+        applyTheme(storedTheme);
+        addMessage('Welcome to the Kishore Gpt! How can I help you create something amazing today?', 'assistant', ui.chat.messages);
+        addMessage("Alright, let's get this show on the road. Ask me about the creative genius that is Kishore. Or don't. I get paid either way.", 'assistant', ui.profile.messages, 'profile');
+        
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.custom-dropdown')) {
+                 document.querySelectorAll('.custom-dropdown.open').forEach(d => d.classList.remove('open'));
+            }
+        });
+        
+        populateTopics();
+
+        // --- Replace role-select logic with new card UI ---
+        const roleCard = document.getElementById('role-card');
+        const roleElements = roleCard.querySelectorAll('.role-element');
+        let selectedRoleValue = 'kishore';
+        let roleMenuCollapsed = false;
+
+        function getSelectedRole() {
+            return selectedRoleValue;
+        }
+        function selectRole(value) {
+            selectedRoleValue = value;
+            roleElements.forEach(el => {
+                el.classList.toggle('selected', el.dataset.value === value);
+            });
+        }
+        function setRoleMenuCollapsed(collapsed) {
+            roleMenuCollapsed = collapsed;
+            if (collapsed) {
+                roleCard.classList.add('collapsed');
+            } else {
+                roleCard.classList.remove('collapsed');
+                // Animate pop effect for all elements with stagger
+                roleElements.forEach((el, idx) => {
+                    el.style.animation = `popIn 0.38s cubic-bezier(.4,2,.6,1) forwards`;
+                    el.style.animationDelay = (idx * 0.03) + 's';
+                    setTimeout(() => { el.style.animation = ''; el.style.animationDelay = ''; }, 400 + idx * 30);
+                });
+            }
+        }
+        // Initial selection and collapsed state
+        selectRole(selectedRoleValue);
+        setRoleMenuCollapsed(true);
+
+        // Click handler for role selection
+        roleElements.forEach(el => {
+            el.addEventListener('click', (e) => {
+                if (el.dataset.value !== selectedRoleValue) {
+                    selectRole(el.dataset.value);
+                    startNewRoleplaySession();
+                }
+                setRoleMenuCollapsed(true);
+                e.stopPropagation();
+            });
+        });
+
+        // Click handler to expand options only (not the card)
+        roleCard.addEventListener('click', (e) => {
+            if (roleMenuCollapsed) {
+                setRoleMenuCollapsed(false);
+                e.stopPropagation();
+            }
+        });
+
+        // Click outside to collapse
+        document.addEventListener('click', (e) => {
+            if (!roleCard.contains(e.target)) {
+                setRoleMenuCollapsed(true);
+            }
+            // ...existing code for custom-dropdown...
+            if (!e.target.closest('.custom-dropdown')) {
+                document.querySelectorAll('.custom-dropdown.open').forEach(d => d.classList.remove('open'));
+            }
+        });
+    });
+    </script>
+</body>
+</html>
+            // ...existing code for custom-dropdown...
+            if (!e.target.closest('.custom-dropdown')) {
+                document.querySelectorAll('.custom-dropdown.open').forEach(d => d.classList.remove('open'));
+            }
+        });
+    });
+    </script>
+</body>
+</html>
+                setRoleMenuCollapsed(true);
+                e.stopPropagation();
+            });
+        });
+
+        // Click handler to expand options only (not the card)
+        roleCard.addEventListener('click', (e) => {
+            if (roleMenuCollapsed) {
+                setRoleMenuCollapsed(false);
+                e.stopPropagation();
+            }
+        });
+
+        // Click outside to collapse
+        document.addEventListener('click', (e) => {
+            if (!roleCard.contains(e.target)) {
+                setRoleMenuCollapsed(true);
+            }
+            // ...existing code for custom-dropdown...
+            if (!e.target.closest('.custom-dropdown')) {
+                document.querySelectorAll('.custom-dropdown.open').forEach(d => d.classList.remove('open'));
+            }
+        });
+    });
+    </script>
+</body>
+</html>
+<!-- API key removed for public deployment -->
