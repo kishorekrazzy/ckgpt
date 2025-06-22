@@ -1,4 +1,4 @@
-// proxy-chat.js (Node or Serverless backend)
+// proxy-chat.js
 import express from 'express';
 import fetch from 'node-fetch';
 const router = express.Router();
@@ -13,7 +13,9 @@ router.post('/', async (req, res) => {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://kishorekrazzy.github.io/YourRepoName/',  // 👈 Replace with actual URL
+        'X-Title': 'Creative AI Suite'
       },
       body: JSON.stringify(payload)
     });
