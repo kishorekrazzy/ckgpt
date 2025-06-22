@@ -1,0 +1,33 @@
+name: Deploy Node App with Secrets
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build # ❗ change/remove this if your project doesn't need build step
+
+      - name: Deploy
+        run: |
+          echo "Deploying your app..." 
+          # ❗ Add your custom deploy command here (e.g., vercel deploy --prod)
