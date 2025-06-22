@@ -1320,41 +1320,6 @@
     });
     </script>
 </body>
-</html>
-            // ...existing code for custom-dropdown...
-            if (!e.target.closest('.custom-dropdown')) {
-                document.querySelectorAll('.custom-dropdown.open').forEach(d => d.classList.remove('open'));
-            }
-        });
-    });
-    </script>
-</body>
-</html>
-                setRoleMenuCollapsed(true);
-                e.stopPropagation();
-            });
-        });
-
-        // Click handler to expand options only (not the card)
-        roleCard.addEventListener('click', (e) => {
-            if (roleMenuCollapsed) {
-                setRoleMenuCollapsed(false);
-                e.stopPropagation();
-            }
-        });
-
-        // Click outside to collapse
-        document.addEventListener('click', (e) => {
-            if (!roleCard.contains(e.target)) {
-                setRoleMenuCollapsed(true);
-            }
-            // ...existing code for custom-dropdown...
-            if (!e.target.closest('.custom-dropdown')) {
-                document.querySelectorAll('.custom-dropdown.open').forEach(d => d.classList.remove('open'));
-            }
-        });
-    });
-    </script>
 </body>
 </html>
 <!-- API key removed for public deployment -->
