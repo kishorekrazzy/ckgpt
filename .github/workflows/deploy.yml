@@ -21,8 +21,8 @@ jobs:
 
     - name: 🧹 Remove private API keys
       run: |
-        sed -i '/const OPENROUTER_API_KEY/d' CKGPT.html
-        echo "<!-- API key removed for public deployment -->" >> CKGPT.html
+        sed -i '/const OPENROUTER_API_KEY/d' index.html
+        echo "<!-- API key removed for public deployment -->" >> index.html
 
     - name: 🚀 Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
