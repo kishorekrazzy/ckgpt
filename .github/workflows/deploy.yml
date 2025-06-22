@@ -1,9 +1,12 @@
-name: Deploy Node App with Secrets
+name: 🚀 Deploy to GitHub Pages
 
 on:
   push:
     branches:
-      - main
+      - main  # or change to your default branch
+
+permissions:
+  contents: write  # Required to push to gh-pages
 
 jobs:
   deploy:
@@ -13,21 +16,17 @@ jobs:
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: 📥 Checkout source
+      uses: actions/checkout@v4
 
-      - name: Set up Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+    - name: 🧹 Remove private API keys
+      run: |
+        sed -i '/const OPENROUTER_API_KEY/d' CKGPT.html
+        echo "<!-- API key removed for public deployment -->" >> CKGPT.html
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build project
-        run: npm run build # ❗ change/remove this if your project doesn't need build step
-
-      - name: Deploy
-        run: |
-          echo "Deploying your app..." 
-          # ❗ Add your custom deploy command here (e.g., vercel deploy --prod)
+    - name: 🚀 Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./
+        publish_branch: gh-pages
